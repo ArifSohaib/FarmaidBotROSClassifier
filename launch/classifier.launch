@@ -1,0 +1,3 @@
+<launch>
+  <node name="classifier" pkg="farmaid_classification" type="image_classifier.py" />
+</launch>
