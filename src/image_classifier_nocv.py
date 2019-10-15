@@ -16,6 +16,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from pytorch_load_test import get_model
 import numpy as np
 
+CLASS_NAMES = ['leafmold', 'lettuce', 'lowwater', 'squash', 'tomato']
 def fix_np(image):
     a = np.asarray(image)
     if a.ndim == 2: a = np.expand_dims(a,2)
@@ -28,16 +29,16 @@ class image_converter(object):
         self.image_pub = rospy.Publisher("image_topic_2",Image,queue_size=1)
         self.string_pub = rospy.Publisher("string_topic",String,queue_size=10)
         self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber("/csi_cam_0/image_raw",Image, self.callback)
+        self.image_sub = rospy.Subscriber("/usb_cam/image_raw",Image, self.callback)
         self.model = get_model()
         self.load_model()
-        self.sigmoid = torch.nn.Sigmoid().to(torch.device("cuda"))
+        self.sigmoid = torch.nn.Sigmoid().cuda()
     def load_model(self):
         source = "/home/nvidia/workspace/catkin_ws/src/farmaid_classification/models/farmaid_model_pytorch"
         try:
             self.model.load_state_dict(torch.load(source))
             self.model.eval()
-            self.model.to(torch.device("cuda"))
+            self.model.cuda()
             rospy.loginfo("model loaded")
         except IOError as e:
             print("model not found in "+ str(os.getcwd()))
@@ -59,12 +60,16 @@ class image_converter(object):
             tfms = transforms.Compose([
                            transforms.ToPILImage(),
                            transforms.Resize(128),
-                           transforms.ToTensor()])
-            torch_input = tfms(img).view(-1,3,128,128).to(torch.device("cuda"))
+                           transforms.ToTensor(),
+                           transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))])
+            torch_input = tfms(img).view(-1,3,128,128).cuda()
             result = self.model(torch_input)
+         
             result = self.sigmoid(result)
-            rospy.loginfo(str(result))
-            self.string_pub.publish(String(str(result)))
+            result = result.to(torch.device('cpu')).detach().numpy()
+            res_dict = {name:res for name, res in zip(CLASS_NAMES, result[0])}
+            #rospy.loginfo(str(r))
+            self.string_pub.publish(String(str(res_dict)))
 
 def main(args):
     ic = image_converter()
