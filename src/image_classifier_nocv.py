@@ -60,13 +60,13 @@ class image_converter(object):
                            transforms.ToPILImage(),
                            transforms.Resize(128),
                            transforms.ToTensor()])
-            torch_input = tfms(img).view(-1,3, 128,128)
+            torch_input = tfms(img).view(-1,3,128,128).to(torch.device("cuda"))
             result = self.model(torch_input)
+            result = self.sigmoid(result)
             rospy.loginfo(str(result))
             self.string_pub.publish(String(str(result)))
 
 def main(args):
-    torch.device('cuda')
     ic = image_converter()
     rospy.init_node("classifier",anonymous=True)
     try:
