@@ -25,8 +25,7 @@ class image_converter(object):
         try:
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:
-            self.string_pub.publish(str(e))
-            print(e)
+            rospy.loginfo("can't connect")
         (rows, cols, channels) = cv_image.shape
         
         if cv_image is not None:
@@ -35,7 +34,7 @@ class image_converter(object):
         try:
             self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
         except CvBridgeError as e:
-            print(e)
+            rospy.logerr("can't publish")
 
 def main(args):
     ic = image_converter()
