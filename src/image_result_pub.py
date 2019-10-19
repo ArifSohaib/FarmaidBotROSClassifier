@@ -40,10 +40,8 @@ class image_converter(object):
 def main(args):
     ic = image_converter()
     rospy.init_node("classifier",anonymous=True)
-    try:
-        rospy.spin()
-        #while not rospy.is_shutdown():
-        #    continue
+    while not rospy.is_shutdown():
+        continue
     except KeyboardInterrupt:
         print("Shutting down")
     cv2.destroyAllWindows()
