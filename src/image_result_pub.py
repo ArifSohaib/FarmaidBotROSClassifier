@@ -42,9 +42,6 @@ def main(args):
     rospy.init_node("classifier",anonymous=True)
     while not rospy.is_shutdown():
         continue
-    except KeyboardInterrupt:
-        print("Shutting down")
-    cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     main(sys.argv)   
