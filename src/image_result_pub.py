@@ -19,7 +19,7 @@ class image_converter(object):
     def __init__(self):
         self.image_pub = rospy.Publisher("image_result",Image,queue_size=1)
         self.bridge = CvBridge()
-        self.string_sub = rospy.Subscriber("/string_topic",Image, self.callback)
+        self.string_sub = rospy.Subscriber("/string_topic",String, self.callback)
 
     def callback(self, data):
         try:
